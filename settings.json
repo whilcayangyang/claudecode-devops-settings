@@ -1,0 +1,85 @@
+{
+  "model": "sonnet",
+  "env": {
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5",
+    "CLAUDE_CODE_EFFORT_LEVEL": "medium",
+    "MAX_THINKING_TOKENS": "4000"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(terraform plan *)",
+      "Bash(terraform validate)",
+      "Bash(docker *)",
+      "Bash(docker-compose *)",
+      "Bash(docker service *)",
+      "Bash(ansible-playbook --check *)",
+      "Bash(bash -n *)",
+      "Read(./terraform/*)",
+      "Read(./docker/*)",
+      "Read(./.env.example)",
+      "Read(./stack.env)",
+      "Grep(*)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(chmod 000 *)",
+      "Bash(terraform apply)",
+      "Bash(terraform destroy)",
+      "Bash(docker push *)",
+      "Bash(docker rm -f *)",
+      "Bash(ansible-playbook [^-]*[^-][^-c][^-])",
+      "Write(/etc/*)",
+      "Write(/root/*)",
+      "Write(*.prod.yml)",
+      "Write(*.prod.yaml)"
+    ]
+  },
+  "cleanupPeriodDays": 7,
+  "compactOnSave": true,
+  "autoMemoryDirectory": ".claude/memory",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(terraform plan|terraform show|terraform state list)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -E 'Plan:|No changes|Resource will be|Error:|Warning:' || echo 'Plan summary not found'",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(docker logs|docker compose logs)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -E 'ERROR|WARN|Exception|failed|error' || echo 'No errors found'",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(docker ps|docker service ls|docker inspect)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tail -20",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(ansible-playbook --check)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -E 'CHANGED|FAILED|ok|ERROR|TASK' || echo 'Run summary not captured'",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
