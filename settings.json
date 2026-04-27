@@ -1,5 +1,5 @@
 {
-  "model": "sonnet",
+  "cleanupPeriodDays": 7,
   "env": {
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5",
@@ -14,6 +14,16 @@
       "Bash(docker-compose *)",
       "Bash(docker service *)",
       "Bash(ansible-playbook --check *)",
+      "Bash(kubectl get *)",
+      "Bash(kubectl describe *)",
+      "Bash(kubectl logs *)",
+      "Bash(kubectl top *)",
+      "Bash(kubectl diff *)",
+      "Bash(kubectl rollout status *)",
+      "Bash(kubectl rollout history *)",
+      "Bash(helm diff *)",
+      "Bash(helm list *)",
+      "Bash(helm upgrade --install * --dry-run)",
       "Bash(bash -n *)",
       "Read(./terraform/*)",
       "Read(./docker/*)",
@@ -29,15 +39,20 @@
       "Bash(docker push *)",
       "Bash(docker rm -f *)",
       "Bash(ansible-playbook [^-]*[^-][^-c][^-])",
+      "Bash(kubectl delete *)",
+      "Bash(kubectl exec *)",
+      "Bash(kubectl apply *)",
+      "Bash(kubectl patch *)",
+      "Bash(kubectl drain *)",
+      "Bash(kubectl cordon *)",
+      "Bash(helm upgrade --install * --values *)",
       "Write(/etc/*)",
       "Write(/root/*)",
       "Write(*.prod.yml)",
       "Write(*.prod.yaml)"
     ]
   },
-  "cleanupPeriodDays": 7,
-  "compactOnSave": true,
-  "autoMemoryDirectory": ".claude/memory",
+  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
@@ -79,7 +94,50 @@
             "timeout": 5000
           }
         ]
+      },
+      {
+        "matcher": "Bash(kubectl diff *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -E '^[+-]' | grep -v '^---\\|^+++' || echo 'No diff output'",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(kubectl logs *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -E 'ERROR|WARN|Exception|panic|fatal|error' || echo 'No errors found'",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(kubectl rollout status *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -E 'successfully rolled out|Waiting|error' || echo 'Rollout status not captured'",
+            "timeout": 10000
+          }
+        ]
       }
     ]
+  },
+  "extraKnownMarketplaces": {
+    "everything-claude-code": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/affaan-m/everything-claude-code.git"
+      }
+    }
+  },
+  "autoMemoryDirectory": ".claude/memory",
+  "compactOnSave": true,
+  "enabledPlugins": {
+    "everything-claude-code@everything-claude-code": true
   }
 }
