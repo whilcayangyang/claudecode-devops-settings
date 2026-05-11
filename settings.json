@@ -9,7 +9,6 @@
     "ECC_HOOK_PROFILE": "minimal",
     "ECC_DISABLED_HOOKS": "post:edit:typecheck,pre:bash:tmux-reminder"
   },
-  "model": "sonnet",
   "permissions": {
     "allow": [
       "Bash(terraform plan *)",
@@ -89,6 +88,7 @@
       "Write(*.prod.yaml)"
     ]
   },
+  "model": "sonnet",
   "hooks": {
     "PostToolUse": [
       {
