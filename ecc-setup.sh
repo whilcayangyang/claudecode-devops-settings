@@ -163,7 +163,7 @@ cmd_install() {
 ${YELLOW}Run these commands inside Claude Code:${RESET}
 
   ${CYAN}/plugin marketplace add ${ECC_REPO}${RESET}
-  ${CYAN}/plugin install ${ECC_PLUGIN_ID}${RESET}
+  ${CYAN}/plugin install ecc@ecc${RESET}
 
 Plugin distributes skills/commands/hooks engine.
 Rules/agents above are installed directly (plugin cannot distribute rules).

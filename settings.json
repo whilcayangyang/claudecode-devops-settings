@@ -164,14 +164,15 @@
     ]
   },
   "enabledPlugins": {
-    "everything-claude-code@everything-claude-code": true
+    "ecc@ecc": true
   },
   "extraKnownMarketplaces": {
-    "everything-claude-code": {
+    "ecc": {
       "source": {
         "source": "git",
         "url": "https://github.com/affaan-m/everything-claude-code.git"
-      }
+      },
+      "autoUpdate": true
     }
   },
   "autoMemoryDirectory": ".claude/memory",
