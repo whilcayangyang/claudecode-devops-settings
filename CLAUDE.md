@@ -4,13 +4,20 @@
 Senior Infrastructure Engineer managing production infrastructure and Homelab automation.
 **Constraint:** Claude Pro (44K tokens/5-hour window, ~10-40 prompts depending on complexity)
 
-## Tech Stack & Versions (April 2026)
-- **Terraform 1.8+:** HCL, modular architecture, state in remote backend
-- **Docker 24.0+:** Standalone & Swarm
-- **Kubernetes 1.36+:** kubectl, Helm 3, manifest-based deployments; prefer namespaced resources
+## Tech Stack & Versions (May 2026)
+- **Terraform 1.15.2:** HCL, modular architecture, state in remote backend
+- **Docker 29.4.3:** Standalone & Swarm
+- **Kubernetes 1.36.1:** manifest-based deployments; prefer namespaced resources
+- **kubectl 1.36.1:** Always namespace-aware (`-n <namespace>`), use `kubectl diff` before apply
+- **helm 4.1.4:** `--dry-run` before install/upgrade; no `helm install` without values file (Helm 4 released Nov 2025 — breaking changes from v3)
+- **kubeseal 0.36.6:** Version must match sealed-secrets controller in cluster; fetch cert before sealing
+- **flux 2.8.6:** GitOps reconciliation; prefer `flux reconcile` over manual `kubectl apply`
+- **talosctl 1.13.0:** Talos node management; install via https://talos.dev/install; version-lock to cluster
+- **go-task 3.50.0:** Task runner for `talos-provisioning/taskfile.yaml`; use `task --list` to discover tasks
+- **jq 1.8.1:** Required by backup/restore scripts; use for parsing kubectl/API JSON output
 - **Bash 5.0+:** Production scripts require `set -euo pipefail`, idempotent
-- **Python 3.12:** Type hints (`typing` module), docstrings (Google style)
-- **Ansible 2.15+:** Config management, always run with `--check` first
+- **Python 3.14.5:** Type hints (`typing` module), docstrings (Google style)
+- **Ansible 13.6.0** (ansible-core 2.20.4)**:** Config management, always run with `--check` first
 
 ## Decision Framework
 For **production:** Prioritize reliability, observability, operational overhead
@@ -56,6 +63,35 @@ kubectl logs -n <namespace> <pod> --previous
 kubectl top pods -n <namespace>
 kubectl describe pod -n <namespace> <pod>
 helm upgrade --install <release> <chart> -n <namespace> --values values.yaml --dry-run
+
+# Flux
+flux get all -n <namespace>
+flux get sources git -A
+flux reconcile source git flux-system
+flux reconcile kustomization flux-system
+flux logs --follow --level=error
+flux diff kustomization flux-system
+
+# Sealed Secrets / kubeseal
+kubeseal --fetch-cert --controller-name=sealed-secrets --controller-namespace=kube-system
+kubeseal --format=yaml < secret.yaml > sealed-secret.yaml
+kubectl get sealedsecrets -n <namespace>
+
+# Talos
+talosctl version --nodes <node-ip>
+talosctl health --nodes <node-ip>
+talosctl get members
+talosctl logs -n <node-ip> kubelet
+talosctl dmesg -n <node-ip>
+talosctl dashboard -n <node-ip>
+
+# go-task
+task --list
+task <task-name> --dry-run
+
+# jq (common patterns)
+kubectl get pods -n <namespace> -o json | jq '.items[].metadata.name'
+kubectl get secret <name> -n <namespace> -o json | jq '.data | map_values(@base64d)'
 
 # Bash validation
 bash -n script.sh

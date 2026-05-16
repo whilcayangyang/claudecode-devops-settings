@@ -17,11 +17,11 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 
 ## Benefits
 
-- **Read-only by default for destructive ops** — `terraform apply`, `kubectl delete`, `kubectl exec/scale`, `helm install`, `docker exec`, `docker rm -f`, and `terraform state push` are in the deny list; you must approve each explicitly.
+- **Read-only by default for destructive ops** — `terraform apply`, `kubectl delete`, `kubectl exec/scale`, `helm install`, `docker exec`, `docker rm -f`, `terraform state push`, `talosctl reboot/reset/upgrade/apply-config`, and `flux delete/suspend` are in the deny list; you must approve each explicitly.
 - **Auto-summarized tool output** — PostToolUse hooks filter `terraform plan/show`, `docker logs`, `kubectl diff/logs`, `ansible --check`, and `kubectl rollout status` output down to the signal lines (errors, warnings, diffs), saving tokens on verbose commands.
-- **Infra-only ECC subset** — installs only the skills and agents relevant to Terraform, Docker, Kubernetes, Ansible, Python, and Bash. Language-specific reviewers (TypeScript, Kotlin, Rust, Java) are skipped.
+- **Infra-only ECC subset** — installs only the skills and agents relevant to Terraform, Docker, Kubernetes, Flux, Talos, Ansible, Python, and Bash. Language-specific reviewers (TypeScript, Kotlin, Rust, Java) are skipped.
 - **Token budget enforced** — `CLAUDE_CODE_EFFORT_LEVEL=medium`, `MAX_THINKING_TOKENS=10000`, and `ECC_SESSION_START_CONTEXT=off` keep per-prompt overhead low on Claude Pro's 44K-token window.
-- **Dry-run culture built in** — `CLAUDE.md` makes dry-runs (`terraform plan`, `ansible --check`, `kubectl diff`, `helm --dry-run`) a non-negotiable rule, not a suggestion.
+- **Dry-run culture built in** — `CLAUDE.md` makes dry-runs (`terraform plan`, `ansible --check`, `kubectl diff`, `helm --dry-run`, `task --dry-run`) a non-negotiable rule, not a suggestion.
 - **MCP guidance included** — `ecc-setup.sh --mcp` explains which MCP servers to keep (context7, github, sequential-thinking) and which to disable (exa, memory, playwright) to preserve context window.
 
 ---
@@ -37,6 +37,11 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 - `ansible-playbook --check`, `ansible --list-hosts/tasks`
 - `kubectl get/describe/logs/top/diff/rollout status/rollout history`
 - `helm list/diff/show/template/upgrade --dry-run`
+- `flux get/logs/diff`
+- `kubeseal --fetch-cert`, `kubectl get sealedsecrets`
+- `talosctl version/health/get/logs/dmesg/dashboard`
+- `task --list`, `task * --dry-run`
+- `jq`
 - `bash -n`, `shellcheck`, `git log/diff/status/show/branch`
 
 **Always denied:**
@@ -44,6 +49,8 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 - `kubectl delete/exec/apply/patch/drain/cordon/edit/scale`
 - `helm install/uninstall/upgrade --install * --values *`
 - `docker push`, `docker rm -f`, `docker exec`
+- `talosctl reboot/reset/upgrade/apply-config`
+- `flux delete/suspend`
 - Writes to `/etc/*`, `/root/*`, `*.prod.yml`, `*.prod.yaml`
 
 ### ECC Skills Installed
@@ -84,6 +91,9 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 - No `latest` tags in Docker for production
 - Bash scripts must use `set -euo pipefail`
 - Python requires type hints and Google-style docstrings
+- `kubeseal` version must match the sealed-secrets controller in cluster
+- `talosctl` must be version-locked to the cluster (never mix versions)
+- Flux GitOps: prefer `flux reconcile` over direct `kubectl apply`
 
 ---
 
@@ -96,6 +106,17 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 | Git | 2.x+ | For submodule management |
 | Node.js | 18+ | Required by ECC install script |
 | npm | 9+ | ECC dependency install |
+| Terraform | 1.15.2 | IaC provisioning |
+| Docker Engine | 29.4.3 | Standalone & Swarm |
+| kubectl | 1.36.1 | Kubernetes CLI |
+| Helm | 4.1.4 | Kubernetes package manager (v4 — breaking changes from v3) |
+| kubeseal | 0.36.6 | Must match sealed-secrets controller version in cluster |
+| Flux | 2.8.6 | GitOps reconciliation |
+| talosctl | 1.13.0 | Talos node management; install via [talos.dev/install](https://talos.dev/install) |
+| go-task | 3.50.0 | Task runner for `talos-provisioning/taskfile.yaml` |
+| jq | 1.8.1 | Required by backup/restore scripts |
+| Ansible | 13.6.0 (core 2.20.4) | Config management |
+| Python | 3.14.5 | Scripting and automation |
 | `shellcheck` | Any | Optional, used by Bash validation hook |
 
 ---
