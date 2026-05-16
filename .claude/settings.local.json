@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python -m json.tool /var/home/whil/GitHub/claudecode-devops-settings/settings.json)",
-      "Bash(git -C /var/home/whil/GitHub/claudecode-devops-settings diff HEAD CLAUDE.md)"
-    ]
-  }
-}
