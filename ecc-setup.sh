@@ -16,9 +16,10 @@ BOLD='\033[1m'
 RESET='\033[0m'
 
 # ── Config ────────────────────────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ECC_REPO="https://github.com/affaan-m/everything-claude-code.git"
 ECC_PLUGIN_ID="everything-claude-code@everything-claude-code"
-ECC_CLONE_DIR="${HOME}/everything-claude-code"
+ECC_CLONE_DIR="${SCRIPT_DIR}/everything-claude-code"
 CLAUDE_DIR="${HOME}/.claude"
 ECC_RULES_DIR="${CLAUDE_DIR}/rules/ecc"
 ECC_SKILLS_DIR="${CLAUDE_DIR}/skills/ecc"
@@ -91,8 +92,6 @@ _link() {
 
 cmd_link_settings() {
   section "Linking settings into ${CLAUDE_DIR}"
-  local SCRIPT_DIR
-  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   mkdir -p "${CLAUDE_DIR}"
   _link "settings.json" "settings.json"
   _link "CLAUDE.md"     "CLAUDE.md"
@@ -111,13 +110,9 @@ cmd_install() {
     fi
   done
 
-  # Clone repo if needed
-  if [[ ! -d "${ECC_CLONE_DIR}" ]]; then
-    info "Cloning ECC repo into ${ECC_CLONE_DIR}..."
-    git clone "$ECC_REPO" "${ECC_CLONE_DIR}"
-  else
-    warn "Repo already exists at ${ECC_CLONE_DIR}, skipping clone. Run 'git pull' inside it to update."
-  fi
+  # Init and update submodule
+  git -C "${SCRIPT_DIR}" submodule update --init --remote everything-claude-code
+  log "ECC submodule up to date"
 
   cd "${ECC_CLONE_DIR}"
   npm install --silent
