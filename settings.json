@@ -79,9 +79,12 @@
       "Bash(kubectl edit *)",
       "Bash(kubectl label *)",
       "Bash(kubectl annotate *)",
+      "Bash(docker exec *)",
       "Bash(helm install *)",
       "Bash(helm uninstall *)",
       "Bash(helm upgrade --install * --values *)",
+      "Bash(kubectl scale *)",
+      "Bash(terraform state push *)",
       "Write(/etc/*)",
       "Write(/root/*)",
       "Write(*.prod.yml)",
@@ -92,7 +95,7 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Bash(terraform plan|terraform show|terraform state list)",
+        "matcher": "Bash(terraform plan *)",
         "hooks": [
           {
             "type": "command",
@@ -102,7 +105,17 @@
         ]
       },
       {
-        "matcher": "Bash(docker logs|docker compose logs)",
+        "matcher": "Bash(terraform show *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -E 'Plan:|No changes|Resource will be|Error:|Warning:' || echo 'Plan summary not found'",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(docker logs *)",
         "hooks": [
           {
             "type": "command",
@@ -112,7 +125,17 @@
         ]
       },
       {
-        "matcher": "Bash(docker ps|docker service ls|docker inspect)",
+        "matcher": "Bash(docker compose logs *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -E 'ERROR|WARN|Exception|failed|error' || echo 'No errors found'",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(docker ps *)",
         "hooks": [
           {
             "type": "command",
@@ -122,7 +145,27 @@
         ]
       },
       {
-        "matcher": "Bash(ansible-playbook --check)",
+        "matcher": "Bash(docker service ls *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tail -20",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(docker inspect *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tail -20",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(ansible-playbook --check *)",
         "hooks": [
           {
             "type": "command",

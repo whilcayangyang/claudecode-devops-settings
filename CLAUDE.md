@@ -7,7 +7,7 @@ Senior Infrastructure Engineer managing production infrastructure and Homelab au
 ## Tech Stack & Versions (April 2026)
 - **Terraform 1.8+:** HCL, modular architecture, state in remote backend
 - **Docker 24.0+:** Standalone & Swarm
-- **Kubernetes 1.30+:** kubectl, Helm 3, manifest-based deployments; prefer namespaced resources
+- **Kubernetes 1.36+:** kubectl, Helm 3, manifest-based deployments; prefer namespaced resources
 - **Bash 5.0+:** Production scripts require `set -euo pipefail`, idempotent
 - **Python 3.12:** Type hints (`typing` module), docstrings (Google style)
 - **Ansible 2.15+:** Config management, always run with `--check` first
@@ -20,7 +20,7 @@ For **Homelab:** Acknowledge cost/resource constraints vs distributed tradeoffs
 1. **Always web-search before DevOps tool advice** — versions change, patterns deprecate
 2. **Production = HA + monitoring + audit trails** — assume these are required
 3. **Push back on operational debt** — flag single points of failure, hidden maintenance costs
-4. **Version context matters** — include "as of March 2026, avoid X because..."
+4. **Version context matters** — include "as of [current month/year], avoid X because..."
 5. **Dry-runs first** — terraform plan, ansible --check, docker compose config, kubectl diff
 6. **Kubernetes: namespace-aware** — always specify `-n <namespace>`, never assume default
 

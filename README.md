@@ -17,8 +17,8 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 
 ## Benefits
 
-- **Read-only by default for destructive ops** — `terraform apply`, `kubectl delete`, `kubectl exec`, `helm install`, and `docker rm -f` are in the deny list; you must approve each explicitly.
-- **Auto-summarized tool output** — PostToolUse hooks filter `terraform plan`, `docker logs`, `kubectl diff`, and `ansible --check` output down to the signal lines (errors, warnings, diffs), saving tokens on verbose commands.
+- **Read-only by default for destructive ops** — `terraform apply`, `kubectl delete`, `kubectl exec/scale`, `helm install`, `docker exec`, `docker rm -f`, and `terraform state push` are in the deny list; you must approve each explicitly.
+- **Auto-summarized tool output** — PostToolUse hooks filter `terraform plan/show`, `docker logs`, `kubectl diff/logs`, `ansible --check`, and `kubectl rollout status` output down to the signal lines (errors, warnings, diffs), saving tokens on verbose commands.
 - **Infra-only ECC subset** — installs only the skills and agents relevant to Terraform, Docker, Kubernetes, Ansible, Python, and Bash. Language-specific reviewers (TypeScript, Kotlin, Rust, Java) are skipped.
 - **Token budget enforced** — `CLAUDE_CODE_EFFORT_LEVEL=medium`, `MAX_THINKING_TOKENS=10000`, and `ECC_SESSION_START_CONTEXT=off` keep per-prompt overhead low on Claude Pro's 44K-token window.
 - **Dry-run culture built in** — `CLAUDE.md` makes dry-runs (`terraform plan`, `ansible --check`, `kubectl diff`, `helm --dry-run`) a non-negotiable rule, not a suggestion.
@@ -40,10 +40,10 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 - `bash -n`, `shellcheck`, `git log/diff/status/show/branch`
 
 **Always denied:**
-- `terraform apply/destroy/import/state rm/state mv`
-- `kubectl delete/exec/apply/patch/drain/cordon/edit`
+- `terraform apply/destroy/import/state rm/state mv/state push`
+- `kubectl delete/exec/apply/patch/drain/cordon/edit/scale`
 - `helm install/uninstall/upgrade --install * --values *`
-- `docker push`, `docker rm -f`
+- `docker push`, `docker rm -f`, `docker exec`
 - Writes to `/etc/*`, `/root/*`, `*.prod.yml`, `*.prod.yaml`
 
 ### ECC Skills Installed
