@@ -110,9 +110,30 @@ cmd_install() {
     fi
   done
 
-  # Init and update submodule
-  git -C "${SCRIPT_DIR}" submodule update --init --remote everything-claude-code
-  log "ECC submodule up to date"
+  # Init and update submodule — skip if already at remote HEAD
+  local submodule_dir="${SCRIPT_DIR}/everything-claude-code"
+  local needs_update=true
+
+  if [[ -f "${submodule_dir}/.git" ]] || [[ -d "${submodule_dir}/.git" ]]; then
+    # Submodule is initialized — fetch and compare
+    git -C "${submodule_dir}" fetch origin --quiet 2>/dev/null || true
+
+    local current_commit remote_commit
+    current_commit=$(git -C "${submodule_dir}" rev-parse HEAD 2>/dev/null || echo "")
+    remote_commit=$(git -C "${submodule_dir}" rev-parse origin/HEAD 2>/dev/null || echo "unknown")
+
+    if [[ -n "${current_commit}" && "${current_commit}" == "${remote_commit}" ]]; then
+      local tag
+      tag=$(git -C "${submodule_dir}" describe --tags 2>/dev/null || echo "${current_commit:0:8}")
+      info "ECC submodule already up to date (${tag}), skipping"
+      needs_update=false
+    fi
+  fi
+
+  if [[ "${needs_update}" == true ]]; then
+    git -C "${SCRIPT_DIR}" submodule update --init --remote everything-claude-code
+    log "ECC submodule updated"
+  fi
 
   cd "${ECC_CLONE_DIR}"
   npm install --silent

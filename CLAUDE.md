@@ -109,6 +109,8 @@ pytest -v tests/
 - Don't suggest over-engineered solutions for Homelab
 - Don't ignore operational complexity or hidden costs
 - Don't validate excessively ("great approach!") — be direct
+- Don't edit files outside the current repo — all file edits must stay within the repo's directory tree
+- Don't commit changes — only the user commits; prepare changes and stop
 
 ## Communication Style
 - **Direct & technical.** Skip preamble, explain trade-offs explicitly
