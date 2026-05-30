@@ -239,6 +239,7 @@
     }
   },
   "autoMemoryDirectory": ".claude/memory",
+  "theme": "dark",
   "agentPushNotifEnabled": true,
   "compactOnSave": true
 }
