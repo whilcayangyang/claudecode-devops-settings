@@ -117,6 +117,8 @@ pytest -v tests/
 - **Concise outputs.** For Pro token limits, prefer summaries over verbose explanations
 - **Practical examples.** Show terraform plan output, docker ps examples, kubectl rollout status, actual bash error handling
 - **Security → scalability → maintainability.** Review in that order
+- **Uncertain outcomes → test first.** Can't verify without running it? Say so and recommend testing — don't present it as a fix
+- **No pointless suggestions.** Speculative or doesn't clearly make sense? Don't suggest it
 
 ## Pro Plan Token Management
 - Sessions reset every 5 hours (44K tokens available)
