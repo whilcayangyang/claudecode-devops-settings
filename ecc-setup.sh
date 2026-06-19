@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # ecc-setup.sh — Everything Claude Code setup for IaC/DevOps
-# Usage: ./ecc-setup.sh [--install | --uninstall | --mcp | --link-settings | --help]
+# Usage: ./ecc-setup.sh [--install | --uninstall | --link-settings | --help]
 # =============================================================================
 
 set -euo pipefail
@@ -88,7 +88,6 @@ ${BOLD}ecc-setup.sh${RESET} — Everything Claude Code for IaC/DevOps
 ${BOLD}Usage:${RESET}
   ./ecc-setup.sh ${CYAN}--install${RESET}        Clone repo, install plugin, rules, skills, agents
   ./ecc-setup.sh ${CYAN}--uninstall${RESET}      Remove ECC rules, skills, agents, env vars
-  ./ecc-setup.sh ${CYAN}--mcp${RESET}            Show MCP server recommendations and status
   ./ecc-setup.sh ${CYAN}--link-settings${RESET}  Symlink settings.json and CLAUDE.md into ~/.claude/
   ./ecc-setup.sh ${CYAN}--help${RESET}           Show this help
 "
@@ -213,7 +212,7 @@ If you also run install.sh --profile from the ECC repo, skip the plugin step.
 "
 
   log "Install complete."
-  echo -e "\n${YELLOW}Next:${RESET} Run ${CYAN}./ecc-setup.sh --mcp${RESET} to review MCP server recommendations."
+  echo -e "\n${YELLOW}Next:${RESET} Configure MCP servers via ${CYAN}/mcp${RESET} inside Claude Code.\n  ECC catalog: ${CYAN}${ECC_CLONE_DIR}/mcp-configs/mcp-servers.json${RESET}"
 }
 
 # ── Uninstall ─────────────────────────────────────────────────────────────────
@@ -270,90 +269,12 @@ ${YELLOW}Manual step required — inside Claude Code:${RESET}
   log "Uninstall complete."
 }
 
-# ── MCP ───────────────────────────────────────────────────────────────────────
-cmd_mcp() {
-  section "MCP Server Recommendations for IaC/DevOps"
-
-  echo -e "
-${BOLD}Keep ENABLED (core 4 for IaC/DevOps):${RESET}
-
-  ${GREEN}✔ context7${RESET}
-      Docs lookup for Terraform, Kubernetes, Python, Helm, AWS providers.
-      Saves you from outdated training data on rapidly-changing APIs.
-
-  ${GREEN}✔ github${RESET}
-      PR review, issue tracking, repo access from Claude Code.
-      Essential for infra code review workflows.
-
-  ${GREEN}✔ sequential-thinking${RESET}
-      Multi-step reasoning for complex infra planning and architecture decisions.
-      Low token overhead, high value for Terraform module design and K8s troubleshooting.
-
-  ${GREEN}✔ nexus${RESET}  (new in ECC v2)
-      Local cost/privacy proxy. Routes to cheapest capable model, masks secrets/PII
-      before egress, tracks token spend across sessions.
-      Install: check ecc.tools or the ECC repo for the nexus binary.
-
-${BOLD}Optional — add if you need them:${RESET}
-
-  ${CYAN}~ parallel-search${RESET}
-      LLM-optimized web search with citation-backed excerpts in one call.
-      Better than exa-web-search for broad research; works anonymous (no key).
-      Use after GitHub search and primary docs fail.
-
-  ${CYAN}~ longhand${RESET}
-      Lossless session history — indexes raw tool calls, file edits, and thinking
-      blocks before Claude Code rotates them. Install: pip install longhand && longhand setup.
-      Useful if you debug across long multi-day infra sessions.
-
-  ${CYAN}~ exa-web-search${RESET}
-      Broader web search. Secondary to parallel-search; requires EXA_API_KEY.
-      Useful for CVE research or finding obscure tool documentation.
-
-${BOLD}Disable these:${RESET}
-
-  ${RED}✘ memory${RESET}
-      Basic persistent memory. Replaced by longhand (verbatim) or omega-memory
-      (semantic). Adds injection overhead every SessionStart with less value.
-      Your CLAUDE.md and skills provide better structured context.
-
-  ${RED}✘ playwright / browser-use / browserbase${RESET}
-      Browser automation. Zero relevance to Terraform/K8s/Python/Bash workflows.
-      Disable immediately — pure token waste.
-
-  ${RED}✘ magic / fal-ai / vercel / railway${RESET}
-      Frontend/deployment MCPs. Not relevant to IaC stack.
-
-${BOLD}Budget rule:${RESET}
-
-  Keep MCPs ≤ 10 active, tools ≤ 80 total.
-  Too many MCPs collapse your 200k context window to ~70k.
-  Current target: ${GREEN}4 active MCPs${RESET} (context7 + github + sequential-thinking + nexus).
-
-${BOLD}MCP config reference:${RESET}
-
-  ECC ships a full catalog at:
-  ${CYAN}${ECC_CLONE_DIR}/mcp-configs/mcp-servers.json${RESET}
-  Copy entries you want into ~/.claude.json mcpServers section.
-
-${BOLD}How to disable in Claude Code:${RESET}
-
-  Run ${CYAN}/mcp${RESET} inside Claude Code → navigate to each server → disable.
-  Claude Code writes choices to ~/.claude.json (not settings.json).
-
-${BOLD}Verify your MCP tool count:${RESET}
-
-  ${CYAN}/mcp${RESET} → check total tool count shown at bottom of list.
-"
-}
-
 # ── Main ──────────────────────────────────────────────────────────────────────
 [[ $# -eq 0 ]] && usage && exit 0
 
 case "${1}" in
   --install)        cmd_install        ;;
   --uninstall)      cmd_uninstall      ;;
-  --mcp)            cmd_mcp            ;;
   --link-settings)  cmd_link_settings  ;;
   --help|-h)   usage         ;;
   *)
