@@ -17,8 +17,8 @@ RESET='\033[0m'
 
 # ── Config ────────────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ECC_REPO="https://github.com/affaan-m/everything-claude-code.git"
-ECC_PLUGIN_ID="everything-claude-code@everything-claude-code"
+ECC_REPO="https://github.com/affaan-m/ECC"
+ECC_PLUGIN_ID="ecc@ecc"
 ECC_CLONE_DIR="${SCRIPT_DIR}/everything-claude-code"
 CLAUDE_DIR="${HOME}/.claude"
 ECC_RULES_DIR="${CLAUDE_DIR}/rules/ecc"
@@ -26,6 +26,7 @@ ECC_SKILLS_DIR="${CLAUDE_DIR}/skills/ecc"
 AGENTS_DIR="${CLAUDE_DIR}/agents"
 
 INFRA_SKILLS=(
+  # Core workflow
   deployment-patterns
   docker-patterns
   backend-patterns
@@ -39,6 +40,24 @@ INFRA_SKILLS=(
   search-first
   mcp-server-patterns
   autonomous-loops
+  # Kubernetes / container orchestration
+  kubernetes-patterns
+  # Git / GitHub
+  git-workflow
+  github-ops
+  # Homelab
+  homelab-network-readiness
+  homelab-network-setup
+  homelab-pihole-dns
+  homelab-vlan-segmentation
+  homelab-wireguard-vpn
+  # Network automation
+  network-bgp-diagnostics
+  network-config-validation
+  network-interface-health
+  netmiko-ssh-automation
+  # Environment management
+  flox-environments
 )
 
 INFRA_AGENTS=(
@@ -48,6 +67,10 @@ INFRA_AGENTS=(
   architect
   planner
   build-error-resolver
+  homelab-architect
+  network-architect
+  network-config-reviewer
+  network-troubleshooter
 )
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -169,7 +192,7 @@ cmd_install() {
       warn "Agent not found: ${agent}.md"
     fi
   done
-  warn "Skipped: java-reviewer, kotlin-reviewer, pytorch-*, rust-*, typescript-reviewer"
+  warn "Skipped: java-reviewer, kotlin-reviewer, pytorch-*, rust-*, typescript-reviewer, flutter-*, harmonyos-*"
 
   cd - >/dev/null
 
@@ -179,10 +202,14 @@ cmd_install() {
 ${YELLOW}Run these commands inside Claude Code:${RESET}
 
   ${CYAN}/plugin marketplace add ${ECC_REPO}${RESET}
-  ${CYAN}/plugin install ecc@ecc${RESET}
+  ${CYAN}/plugin install ${ECC_PLUGIN_ID}${RESET}
 
+Plugin identifier: ${BOLD}${ECC_PLUGIN_ID}${RESET}  (canonical slug as of ECC v2.0)
 Plugin distributes skills/commands/hooks engine.
 Rules/agents above are installed directly (plugin cannot distribute rules).
+
+${YELLOW}Do NOT stack install methods.${RESET}
+If you also run install.sh --profile from the ECC repo, skip the plugin step.
 "
 
   log "Install complete."
@@ -248,7 +275,7 @@ cmd_mcp() {
   section "MCP Server Recommendations for IaC/DevOps"
 
   echo -e "
-${BOLD}Keep ENABLED:${RESET}
+${BOLD}Keep ENABLED (core 4 for IaC/DevOps):${RESET}
 
   ${GREEN}✔ context7${RESET}
       Docs lookup for Terraform, Kubernetes, Python, Helm, AWS providers.
@@ -262,26 +289,52 @@ ${BOLD}Keep ENABLED:${RESET}
       Multi-step reasoning for complex infra planning and architecture decisions.
       Low token overhead, high value for Terraform module design and K8s troubleshooting.
 
+  ${GREEN}✔ nexus${RESET}  (new in ECC v2)
+      Local cost/privacy proxy. Routes to cheapest capable model, masks secrets/PII
+      before egress, tracks token spend across sessions.
+      Install: check ecc.tools or the ECC repo for the nexus binary.
+
+${BOLD}Optional — add if you need them:${RESET}
+
+  ${CYAN}~ parallel-search${RESET}
+      LLM-optimized web search with citation-backed excerpts in one call.
+      Better than exa-web-search for broad research; works anonymous (no key).
+      Use after GitHub search and primary docs fail.
+
+  ${CYAN}~ longhand${RESET}
+      Lossless session history — indexes raw tool calls, file edits, and thinking
+      blocks before Claude Code rotates them. Install: pip install longhand && longhand setup.
+      Useful if you debug across long multi-day infra sessions.
+
+  ${CYAN}~ exa-web-search${RESET}
+      Broader web search. Secondary to parallel-search; requires EXA_API_KEY.
+      Useful for CVE research or finding obscure tool documentation.
+
 ${BOLD}Disable these:${RESET}
 
-  ${RED}✘ exa${RESET}
-      Web search MCP. Redundant for infra work — context7 handles docs better.
-      Each MCP tool description costs tokens. No benefit for your stack.
-
   ${RED}✘ memory${RESET}
-      Persistent cross-session memory. Adds injection overhead every SessionStart.
-      For infra work, your CLAUDE.md and skills provide better structured context.
-      Use ECC_SESSION_START_CONTEXT=off instead.
+      Basic persistent memory. Replaced by longhand (verbatim) or omega-memory
+      (semantic). Adds injection overhead every SessionStart with less value.
+      Your CLAUDE.md and skills provide better structured context.
 
-  ${RED}✘ playwright${RESET}
+  ${RED}✘ playwright / browser-use / browserbase${RESET}
       Browser automation. Zero relevance to Terraform/K8s/Python/Bash workflows.
       Disable immediately — pure token waste.
+
+  ${RED}✘ magic / fal-ai / vercel / railway${RESET}
+      Frontend/deployment MCPs. Not relevant to IaC stack.
 
 ${BOLD}Budget rule:${RESET}
 
   Keep MCPs ≤ 10 active, tools ≤ 80 total.
   Too many MCPs collapse your 200k context window to ~70k.
-  Current target: ${GREEN}3 active MCPs${RESET} (context7 + github + sequential-thinking).
+  Current target: ${GREEN}4 active MCPs${RESET} (context7 + github + sequential-thinking + nexus).
+
+${BOLD}MCP config reference:${RESET}
+
+  ECC ships a full catalog at:
+  ${CYAN}${ECC_CLONE_DIR}/mcp-configs/mcp-servers.json${RESET}
+  Copy entries you want into ~/.claude.json mcpServers section.
 
 ${BOLD}How to disable in Claude Code:${RESET}
 
