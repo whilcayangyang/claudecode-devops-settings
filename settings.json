@@ -241,5 +241,6 @@
   "autoMemoryDirectory": ".claude/memory",
   "theme": "dark",
   "agentPushNotifEnabled": true,
-  "compactOnSave": true
+  "compactOnSave": true,
+  "tui": "fullscreen"
 }
