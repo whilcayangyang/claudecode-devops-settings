@@ -1,7 +1,7 @@
 {
   "cleanupPeriodDays": 7,
   "env": {
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5-20251001",
     "CLAUDE_CODE_EFFORT_LEVEL": "medium",
     "MAX_THINKING_TOKENS": "10000",
@@ -111,7 +111,7 @@
       "Write(*.prod.yaml)"
     ]
   },
-  "model": "sonnet",
+  "model": "claude-sonnet-5",
   "hooks": {
     "PostToolUse": [
       {
@@ -238,9 +238,9 @@
       "autoUpdate": true
     }
   },
+  "tui": "fullscreen",
   "autoMemoryDirectory": ".claude/memory",
   "theme": "dark",
   "agentPushNotifEnabled": true,
-  "compactOnSave": true,
-  "tui": "fullscreen"
+  "compactOnSave": true
 }
