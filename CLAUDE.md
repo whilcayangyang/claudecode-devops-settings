@@ -124,5 +124,5 @@ pytest -v tests/
 - Sessions reset every 5 hours (44K tokens available)
 - Use `/compact` aggressively when context fills past 60%
 - Use `/clear` between unrelated infrastructure tasks
-- Prefer Sonnet 4.6 (default) — reserve Opus for complex architectural decisions only
+- Prefer Sonnet (default) — reserve Opus for complex architectural decisions only
 - Batch related prompts: "Update error handling in auth.yml, api.yml, and db.yml" not three separate asks
