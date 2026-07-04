@@ -4,20 +4,20 @@
 Senior Infrastructure Engineer managing production infrastructure and Homelab automation.
 **Constraint:** Claude Pro (44K tokens/5-hour window, ~10-40 prompts depending on complexity)
 
-## Tech Stack & Versions (May 2026)
-- **Terraform 1.15.2:** HCL, modular architecture, state in remote backend
-- **Docker 29.4.3:** Standalone & Swarm
-- **Kubernetes 1.36.1:** manifest-based deployments; prefer namespaced resources
-- **kubectl 1.36.1:** Always namespace-aware (`-n <namespace>`), use `kubectl diff` before apply
-- **helm 4.1.4:** `--dry-run` before install/upgrade; no `helm install` without values file (Helm 4 released Nov 2025 — breaking changes from v3)
-- **kubeseal 0.36.6:** Version must match sealed-secrets controller in cluster; fetch cert before sealing
-- **flux 2.8.6:** GitOps reconciliation; prefer `flux reconcile` over manual `kubectl apply`
-- **talosctl 1.13.0:** Talos node management; install via https://talos.dev/install; version-lock to cluster
-- **go-task 3.50.0:** Task runner for `talos-provisioning/taskfile.yaml`; use `task --list` to discover tasks
-- **jq 1.8.1:** Required by backup/restore scripts; use for parsing kubectl/API JSON output
+## Tech Stack & Versions (as of July 2026)
+- **Terraform 1.15.7:** HCL, modular architecture, state in remote backend (1.16 in alpha — do not adopt yet)
+- **Docker 29.6.1:** Standalone & Swarm
+- **Kubernetes 1.36.2:** manifest-based deployments; prefer namespaced resources (1.37.0 due Aug 26, 2026 — not yet released)
+- **kubectl 1.36.2:** Always namespace-aware (`-n <namespace>`), use `kubectl diff` before apply
+- **helm 4.2.2:** `--dry-run` before install/upgrade; no `helm install` without values file (Helm 4 stable since Nov 2025 — breaking changes from v3; v3 line still gets security fixes via 3.21.2 until Nov 2026)
+- **kubeseal 0.38.1:** Version must match sealed-secrets controller in cluster; fetch cert before sealing
+- **flux 2.8.6:** GitOps reconciliation; prefer `flux reconcile` over manual `kubectl apply`; Flux 2.8 adds Helm v4 support (server-side apply, CEL health checks)
+- **talosctl 1.13.2:** Talos node management; install via https://talos.dev/install; version-lock to cluster
+- **go-task 3.51.1:** Task runner for `talos-provisioning/taskfile.yaml`; use `task --list` to discover tasks
+- **jq 1.8.2:** Required by backup/restore scripts; use for parsing kubectl/API JSON output
 - **Bash 5.0+:** Production scripts require `set -euo pipefail`, idempotent
-- **Python 3.14.5:** Type hints (`typing` module), docstrings (Google style)
-- **Ansible 13.6.0** (ansible-core 2.20.4)**:** Config management, always run with `--check` first
+- **Python 3.14.6:** Type hints (`typing` module), docstrings (Google style)
+- **Ansible 13.6.0** (ansible-core 2.21.1)**:** Config management, always run with `--check` first
 
 ## Decision Framework
 For **production:** Prioritize reliability, observability, operational overhead
@@ -30,6 +30,53 @@ For **Homelab:** Acknowledge cost/resource constraints vs distributed tradeoffs
 4. **Version context matters** — include "as of [current month/year], avoid X because..."
 5. **Dry-runs first** — terraform plan, ansible --check, docker compose config, kubectl diff
 6. **Kubernetes: namespace-aware** — always specify `-n <namespace>`, never assume default
+
+## ECC Skills & Agents
+Available via the `ecc` plugin. Given the Pro token budget, don't invoke proactively for simple/single-file tasks — only when the task's complexity actually requires the specialized workflow (multi-file features, unfamiliar tool version behavior, security-sensitive changes, network/homelab design work, etc). Prefer direct tool use for anything answerable in a few commands.
+
+**Skills** — invoke via `Skill` when the task matches:
+| Skill | Use when |
+|---|---|
+| deployment-patterns | Designing/reviewing a deploy pipeline or rollout strategy |
+| docker-patterns | Writing/reviewing Dockerfiles or Compose stacks |
+| backend-patterns | Backend service architecture or API server design |
+| python-patterns | Non-trivial Python implementation work |
+| python-testing | Writing/reviewing Python test suites |
+| api-design | Designing new REST endpoints or contracts |
+| database-migrations | Writing or reviewing schema migrations |
+| security-review | Before committing security-sensitive code (auth, secrets, input handling) |
+| verification-loop | Verifying a nontrivial change actually works end-to-end |
+| tdd-workflow | New feature or bug fix needing test-first discipline |
+| search-first | Before writing new implementation code — check for existing/reusable solutions |
+| mcp-server-patterns | Building or modifying an MCP server |
+| autonomous-loops | Designing a recurring/autonomous agent loop |
+| kubernetes-patterns | Writing/reviewing K8s manifests or cluster changes |
+| git-workflow | Commit/PR message and branching conventions |
+| github-ops | GitHub issue/PR/Actions automation |
+| homelab-network-readiness | Auditing homelab network before a change |
+| homelab-network-setup | Standing up new homelab network segments |
+| homelab-pihole-dns | Pi-hole/DNS configuration |
+| homelab-vlan-segmentation | VLAN design/segmentation work |
+| homelab-wireguard-vpn | WireGuard VPN setup |
+| network-bgp-diagnostics | Diagnosing BGP routing issues |
+| network-config-validation | Validating router/switch config changes |
+| network-interface-health | Diagnosing interface-level network health |
+| netmiko-ssh-automation | Scripting network device automation via Netmiko |
+| flox-environments | Managing Flox dev environments |
+
+**Agents** — invoke via `Agent` when delegating a bounded, independent task:
+| Agent | Use when |
+|---|---|
+| python-reviewer | Reviewing Python code changes |
+| security-reviewer | Security-sensitive code before commit |
+| code-reviewer | General review after writing/modifying code |
+| architect | Architectural decisions, system design tradeoffs |
+| planner | Planning complex multi-step features/refactors |
+| build-error-resolver | Build is broken and needs a minimal fix |
+| homelab-architect | Designing/changing homelab network topology |
+| network-architect | Enterprise/multi-site network design |
+| network-config-reviewer | Reviewing router/switch config for safety |
+| network-troubleshooter | Diagnosing live network connectivity issues |
 
 ## Code & Config Standards
 **Terraform:** Use state locking, variables.tf for inputs, locals for computed values, modules/ for reusable infrastructure
@@ -120,9 +167,12 @@ pytest -v tests/
 - **Uncertain outcomes → test first.** Can't verify without running it? Say so and recommend testing — don't present it as a fix
 - **No pointless suggestions.** Speculative or doesn't clearly make sense? Don't suggest it
 
-## Pro Plan Token Management
-- Sessions reset every 5 hours (44K tokens available)
-- Use `/compact` aggressively when context fills past 60%
-- Use `/clear` between unrelated infrastructure tasks
-- Prefer Sonnet (default) — reserve Opus for complex architectural decisions only
-- Batch related prompts: "Update error handling in auth.yml, api.yml, and db.yml" not three separate asks
+## Pro Plan Token Management (Sonnet 5 only)
+- Sessions reset every 5 hours (44K tokens available); track usage, don't wait for a hard stop
+- `/clear` between unrelated infrastructure tasks — don't carry dead context into a new problem
+- `/compact` proactively at ~60% context, before Sonnet 5 starts dropping earlier detail
+- Batch related prompts into one ask: "update error handling in auth.yml, api.yml, and db.yml" not three separate turns
+- Keep one task/ticket per session — mixing unrelated infra changes burns tokens on re-establishing context
+- Avoid pasting full file contents when a path + line range will do; let Claude read only what's needed
+- Skip re-explaining stack/versions already in this file — reference them, don't restate them
+- For exploratory/investigation asks, request a direct answer with trade-offs, not an exhaustive multi-option writeup
