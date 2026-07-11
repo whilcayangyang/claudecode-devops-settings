@@ -1,5 +1,10 @@
 # claudecode-devops-settings
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-5A32FB)](https://github.com/anthropics/claude-code)
+[![Model](https://img.shields.io/badge/model-claude--sonnet--5-orange)](settings.json)
+[![ECC Plugin](https://img.shields.io/badge/ECC-everything--claude--code-1f6feb)](https://github.com/affaan-m/everything-claude-code)
+
 Claude Code configuration tuned for senior infrastructure engineers managing production and Homelab environments. Pairs a battle-tested `settings.json` with a curated [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code) plugin subset to keep the assistant direct, safe, and token-efficient on IaC workflows.
 
 ---
@@ -35,6 +40,7 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 - `docker ps/images/inspect/logs/stats/compose config/compose logs`
 - `docker service ls/inspect/logs/ps`
 - `ansible-playbook --check`, `ansible --list-hosts/tasks`
+- `docker network ls/volume ls/compose ps/compose images`
 - `kubectl get/describe/logs/top/diff/rollout status/rollout history`
 - `helm list/diff/show/template/upgrade --dry-run`
 - `flux get/logs/diff`
@@ -42,15 +48,16 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 - `talosctl version/health/get/logs/dmesg/dashboard`
 - `task --list`, `task * --dry-run`
 - `jq`
-- `bash -n`, `shellcheck`, `git log/diff/status/show/branch`
+- `bash -n`, `shellcheck`, `git log/diff/status/show/branch/remote -v`
 
 **Always denied:**
 - `terraform apply/destroy/import/state rm/state mv/state push`
-- `kubectl delete/exec/apply/patch/drain/cordon/edit/scale`
+- `kubectl delete/exec/apply/patch/drain/cordon/edit/scale/label/annotate`
 - `helm install/uninstall/upgrade --install * --values *`
 - `docker push`, `docker rm -f`, `docker exec`
 - `talosctl reboot/reset/upgrade/apply-config`
 - `flux delete/suspend`
+- `rm -rf *`, `chmod 000 *`
 - Writes to `/etc/*`, `/root/*`, `*.prod.yml`, `*.prod.yaml`
 
 ### ECC Skills Installed
@@ -70,6 +77,19 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 | `search-first` | Research before implementation |
 | `mcp-server-patterns` | MCP server design and usage |
 | `autonomous-loops` | Long-running agent loop patterns |
+| `kubernetes-patterns` | K8s manifest and cluster-change review |
+| `git-workflow` | Commit/PR message and branching conventions |
+| `github-ops` | GitHub issue/PR/Actions automation |
+| `homelab-network-readiness` | Auditing homelab network before a change |
+| `homelab-network-setup` | Standing up new homelab network segments |
+| `homelab-pihole-dns` | Pi-hole/DNS configuration |
+| `homelab-vlan-segmentation` | VLAN design/segmentation work |
+| `homelab-wireguard-vpn` | WireGuard VPN setup |
+| `network-bgp-diagnostics` | Diagnosing BGP routing issues |
+| `network-config-validation` | Validating router/switch config changes |
+| `network-interface-health` | Diagnosing interface-level network health |
+| `netmiko-ssh-automation` | Scripting network device automation via Netmiko |
+| `flox-environments` | Managing Flox dev environments |
 
 ### ECC Agents Installed
 
@@ -81,6 +101,10 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 | `architect` | Architectural decisions |
 | `planner` | Complex feature or refactor planning |
 | `build-error-resolver` | When a build or script fails |
+| `homelab-architect` | Designing/changing homelab network topology |
+| `network-architect` | Enterprise/multi-site network design |
+| `network-config-reviewer` | Reviewing router/switch config for safety |
+| `network-troubleshooter` | Diagnosing live network connectivity issues |
 
 ### CLAUDE.md Rules Enforced
 
@@ -103,20 +127,21 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 |---|---|---|
 | [Claude Code](https://github.com/anthropics/claude-code) | Latest | CLI or desktop app |
 | Claude Pro / Team / API | — | 44K token window assumed |
+| Model | `claude-sonnet-5` | Pinned in `settings.json` (`model` + `ANTHROPIC_DEFAULT_SONNET_MODEL`); Haiku fallback is `claude-haiku-4-5-20251001` |
 | Git | 2.x+ | For submodule management |
 | Node.js | 18+ | Required by ECC install script |
 | npm | 9+ | ECC dependency install |
-| Terraform | 1.15.2 | IaC provisioning |
-| Docker Engine | 29.4.3 | Standalone & Swarm |
-| kubectl | 1.36.1 | Kubernetes CLI |
-| Helm | 4.1.4 | Kubernetes package manager (v4 — breaking changes from v3) |
-| kubeseal | 0.36.6 | Must match sealed-secrets controller version in cluster |
-| Flux | 2.8.6 | GitOps reconciliation |
-| talosctl | 1.13.0 | Talos node management; install via [talos.dev/install](https://talos.dev/install) |
-| go-task | 3.50.0 | Task runner for `talos-provisioning/taskfile.yaml` |
-| jq | 1.8.1 | Required by backup/restore scripts |
-| Ansible | 13.6.0 (core 2.20.4) | Config management |
-| Python | 3.14.5 | Scripting and automation |
+| Terraform | 1.15.7 | IaC provisioning (1.16 in alpha — do not adopt yet) |
+| Docker Engine | 29.6.1 | Standalone & Swarm |
+| kubectl | 1.36.2 | Kubernetes CLI |
+| Helm | 4.2.2 | Kubernetes package manager (v4 — breaking changes from v3) |
+| kubeseal | 0.38.1 | Must match sealed-secrets controller version in cluster |
+| Flux | 2.8.6 | GitOps reconciliation (adds Helm v4 support: server-side apply, CEL health checks) |
+| talosctl | 1.13.2 | Talos node management; install via [talos.dev/install](https://talos.dev/install) |
+| go-task | 3.51.1 | Task runner for `talos-provisioning/taskfile.yaml` |
+| jq | 1.8.2 | Required by backup/restore scripts |
+| Ansible | 13.6.0 (ansible-core 2.21.1) | Config management |
+| Python | 3.14.6 | Scripting and automation |
 | `shellcheck` | Any | Optional, used by Bash validation hook |
 
 ---
@@ -190,3 +215,9 @@ Removes ECC rules, skills, and agents from `~/.claude/`. Then inside Claude Code
 - `CLAUDE_CODE_EFFORT_LEVEL=medium` balances quality vs token spend
 - Use `/compact` when context exceeds 60%; `/clear` between unrelated infra tasks
 - Target ≤ 10 active MCPs, ≤ 80 total MCP tools to preserve context window headroom
+
+---
+
+## License
+
+[GNU General Public License v3.0](LICENSE)
