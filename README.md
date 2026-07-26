@@ -14,7 +14,7 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 | File / Dir | Purpose |
 |---|---|
 | `settings.json` | Project-level Claude Code config — model, permissions, hooks, env vars, ECC plugin |
-| `CLAUDE.md` | Global instructions — tech stack, coding standards, decision framework, communication style |
+| `CLAUDE.md` | Global instructions — tech stack, non-negotiable operating rules, coding standards, communication/token efficiency, approval-gated "What NOT To Do" |
 | `ecc-setup.sh` | One-shot installer/uninstaller for ECC rules, skills, and agents |
 | `everything-claude-code/` | ECC submodule — source for skills, agents, and rules |
 
@@ -26,7 +26,8 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 - **Auto-summarized tool output** — PostToolUse hooks filter `terraform plan/show`, `docker logs`, `kubectl diff/logs`, `ansible --check`, and `kubectl rollout status` output down to the signal lines (errors, warnings, diffs), saving tokens on verbose commands.
 - **Infra-only ECC subset** — installs only the skills and agents relevant to Terraform, Docker, Kubernetes, Flux, Talos, Ansible, Python, and Bash. Language-specific reviewers (TypeScript, Kotlin, Rust, Java) are skipped.
 - **Token budget enforced** — `CLAUDE_CODE_EFFORT_LEVEL=medium`, `MAX_THINKING_TOKENS=10000`, and `ECC_SESSION_START_CONTEXT=off` keep per-prompt overhead low on Claude Pro's 44K-token window.
-- **Dry-run culture built in** — `CLAUDE.md` makes dry-runs (`terraform plan`, `ansible --check`, `kubectl diff`, `helm --dry-run`, `task --dry-run`) a non-negotiable rule, not a suggestion.
+- **Dry-run culture built in** — `CLAUDE.md` makes dry-runs (`terraform plan`, `ansible --check`, `kubectl diff`, `helm --dry-run`, `task --dry-run`) a non-negotiable operating rule, not a suggestion.
+- **Approval-gated destructive actions** — `terraform apply/destroy`, `kubectl delete`, `helm uninstall`, `rm -rf`, `git push --force`, and `talosctl reset` require my explicit approval per instance, enforced both in `settings.json`'s deny list and as a non-negotiable rule in `CLAUDE.md`.
 - **MCP guidance included** — `ecc-setup.sh --mcp` explains which MCP servers to keep (context7, github, sequential-thinking) and which to disable (exa, memory, playwright) to preserve context window.
 
 ---
@@ -108,16 +109,24 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 
 ### CLAUDE.md Rules Enforced
 
-- Web-search before any DevOps tool advice (versions change fast)
-- Production = HA + monitoring + audit trails (assumed, not optional)
+**Non-Negotiable Operating Rules:**
+- Web-search before any DevOps tool/version advice (versions change fast)
+- State version context explicitly ("as of [month/year], avoid X because Y")
 - Push back on operational debt — single points of failure flagged
+- Dry-run/plan before any mutating operation, output shown before applying
 - Kubernetes: always namespace-aware (`-n <namespace>`, never default)
+- No destructive/irreversible action without explicit per-instance approval
+
+**Code & Config Standards:**
 - No `latest` tags in Docker for production
 - Bash scripts must use `set -euo pipefail`
 - Python requires type hints and Google-style docstrings
 - `kubeseal` version must match the sealed-secrets controller in cluster
 - `talosctl` must be version-locked to the cluster (never mix versions)
 - Flux GitOps: prefer `flux reconcile` over direct `kubectl apply`
+
+**What NOT To Do — non-negotiable unless explicitly approved in-session:**
+- No Linux/DevOps fundamentals explanations, no unsolicited multiple solutions, no cloud-only bias, no over-engineering Homelab, no editing outside the repo, no commits — Claude prepares changes, the user commits
 
 ---
 
