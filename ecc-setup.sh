@@ -56,8 +56,12 @@ INFRA_SKILLS=(
   network-config-validation
   network-interface-health
   netmiko-ssh-automation
+  cisco-ios-patterns
   # Environment management
   flox-environments
+  # Harness/operational maintenance
+  context-budget
+  automation-audit-ops
 )
 
 INFRA_AGENTS=(
@@ -71,6 +75,7 @@ INFRA_AGENTS=(
   network-architect
   network-config-reviewer
   network-troubleshooter
+  harness-optimizer
 )
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -166,7 +171,7 @@ cmd_install() {
   mkdir -p "$ECC_RULES_DIR"
   cp -R rules/common "$ECC_RULES_DIR/"
   log "Rules installed → ${ECC_RULES_DIR}/common"
-  warn "Skipped: typescript/, swift/, php/, golang/ — not relevant to IaC stack"
+  warn "Skipped: all language-specific rule dirs (typescript/, swift/, php/, golang/, python/, rust/, java/, kotlin/, etc.) — not relevant to IaC stack"
 
   # Skills
   section "Installing skills (infra subset)"
@@ -191,7 +196,7 @@ cmd_install() {
       warn "Agent not found: ${agent}.md"
     fi
   done
-  warn "Skipped: java-reviewer, kotlin-reviewer, pytorch-*, rust-*, typescript-reviewer, flutter-*, harmonyos-*"
+  warn "Skipped: all language/framework-specific reviewer & build-resolver agents not relevant to IaC stack (java-reviewer, kotlin-reviewer, pytorch-*, rust-*, typescript-reviewer, flutter-*, harmonyos-*, csharp-reviewer, fastapi-reviewer, gan-*, opensource-*, etc.)"
 
   cd - >/dev/null
 
@@ -203,7 +208,7 @@ ${YELLOW}Run these commands inside Claude Code:${RESET}
   ${CYAN}/plugin marketplace add ${ECC_REPO}${RESET}
   ${CYAN}/plugin install ${ECC_PLUGIN_ID}${RESET}
 
-Plugin identifier: ${BOLD}${ECC_PLUGIN_ID}${RESET}  (canonical slug as of ECC v2.0)
+Plugin identifier: ${BOLD}${ECC_PLUGIN_ID}${RESET}  (canonical slug, confirmed against ECC v2.2.0)
 Plugin distributes skills/commands/hooks engine.
 Rules/agents above are installed directly (plugin cannot distribute rules).
 
