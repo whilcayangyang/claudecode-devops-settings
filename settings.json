@@ -3,7 +3,7 @@
   "env": {
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5-20251001",
-    "CLAUDE_CODE_EFFORT_LEVEL": "medium",
+    "CLAUDE_CODE_EFFORT_LEVEL": "high",
     "MAX_THINKING_TOKENS": "10000",
     "ECC_SESSION_START_CONTEXT": "off",
     "ECC_HOOK_PROFILE": "minimal",
@@ -241,6 +241,5 @@
   "tui": "fullscreen",
   "autoMemoryDirectory": ".claude/memory",
   "theme": "dark",
-  "agentPushNotifEnabled": true,
-  "compactOnSave": true
+  "agentPushNotifEnabled": true
 }
