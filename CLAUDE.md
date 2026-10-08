@@ -1,7 +1,7 @@
 # DevOps Infrastructure — Global Instructions
 
 ## Professional Context
-Senior Infrastructure Engineer managing production infrastructure and Homelab automation, using Claude Pro (Sonnet 5, 44K tokens/5-hour window, ~10-40 prompts depending on complexity). All guidance below is written to be answerable in that budget — see **Communication & Token Efficiency** for how this shapes response style.
+Senior Infrastructure Engineer managing production infrastructure and Homelab automation, using Claude Pro (Sonnet 5.5, 44K tokens/5-hour window, ~10-40 prompts depending on complexity). All guidance below is written to be answerable in that budget — see **Communication & Token Efficiency** for how this shapes response style.
 
 ## Tech Stack & Versions (as of July 2026)
 - **Terraform 1.15.7:** HCL, modular architecture, state in remote backend (1.16 in alpha — do not adopt yet)
@@ -35,50 +35,6 @@ Command-specific conventions (namespace flags, dry-run flags, check modes) live 
 ## ECC Skills & Agents
 Available via the `ecc` plugin. Given the Pro token budget, don't invoke proactively for simple/single-file tasks — only when complexity actually requires the specialized workflow (multi-file features, unfamiliar tool version behavior, security-sensitive changes, network/homelab design work). Prefer direct tool use for anything answerable in a few commands.
 
-**Skills** — invoke via `Skill` when the task matches:
-| Skill | Use when |
-|---|---|
-| deployment-patterns | Designing/reviewing a deploy pipeline or rollout strategy |
-| docker-patterns | Writing/reviewing Dockerfiles or Compose stacks |
-| backend-patterns | Backend service architecture or API server design |
-| python-patterns | Non-trivial Python implementation work |
-| python-testing | Writing/reviewing Python test suites |
-| api-design | Designing new REST endpoints or contracts |
-| database-migrations | Writing or reviewing schema migrations |
-| security-review | Before committing security-sensitive code (auth, secrets, input handling) |
-| verification-loop | Verifying a nontrivial change actually works end-to-end |
-| tdd-workflow | New feature or bug fix needing test-first discipline |
-| search-first | Before writing new implementation code — check for existing/reusable solutions |
-| mcp-server-patterns | Building or modifying an MCP server |
-| autonomous-loops | Designing a recurring/autonomous agent loop |
-| kubernetes-patterns | Writing/reviewing K8s manifests or cluster changes |
-| git-workflow | Commit/PR message and branching conventions |
-| github-ops | GitHub issue/PR/Actions automation |
-| homelab-network-readiness | Auditing homelab network before a change |
-| homelab-network-setup | Standing up new homelab network segments |
-| homelab-pihole-dns | Pi-hole/DNS configuration |
-| homelab-vlan-segmentation | VLAN design/segmentation work |
-| homelab-wireguard-vpn | WireGuard VPN setup |
-| network-bgp-diagnostics | Diagnosing BGP routing issues |
-| network-config-validation | Validating router/switch config changes |
-| network-interface-health | Diagnosing interface-level network health |
-| netmiko-ssh-automation | Scripting network device automation via Netmiko |
-| flox-environments | Managing Flox dev environments |
-
-**Agents** — invoke via `Agent` when delegating a bounded, independent task:
-| Agent | Use when |
-|---|---|
-| python-reviewer | Reviewing Python code changes |
-| security-reviewer | Security-sensitive code before commit |
-| code-reviewer | General review after writing/modifying code |
-| architect | Architectural decisions, system design tradeoffs |
-| planner | Planning complex multi-step features/refactors |
-| build-error-resolver | Build is broken and needs a minimal fix |
-| homelab-architect | Designing/changing homelab network topology |
-| network-architect | Enterprise/multi-site network design |
-| network-config-reviewer | Reviewing router/switch config for safety |
-| network-troubleshooter | Diagnosing live network connectivity issues |
-
 ## Code & Config Standards
 - **Terraform:** state locking, `variables.tf` for inputs, `locals` for computed values, `modules/` for reusable infrastructure
 - **Bash:** fail fast (`set -euo pipefail`), handle errors (`trap`), quote variables (`"$var"`), no pipes to sudo
@@ -88,69 +44,22 @@ Available via the `ecc` plugin. Given the Pro token budget, don't invoke proacti
 - **Kubernetes:** pin image tags, set resource requests/limits, prefer Deployments over bare Pods, RBAC least-privilege
 
 ## Frequent Tasks — Pre-optimized
+Non-obvious invocations only (read-only/dry-run forms; mutating steps still need my approval per rule 6):
 ```bash
-# Terraform
 terraform -chdir=./terraform plan -out=tfplan
 terraform -chdir=./terraform validate
-
-# Docker/Swarm
 docker compose config --quiet
-docker service ls --format "table {{.Name}}\t{{.Replicas}}"
-
-# Ansible
 ansible-playbook --check -i inventory site.yml
-ansible-playbook -i inventory site.yml
-
-# Kubernetes
 kubectl diff -f manifest.yaml
-kubectl apply -f manifest.yaml
-kubectl rollout status deployment/<name> -n <namespace>
-kubectl rollout undo deployment/<name> -n <namespace>
-kubectl get pods -n <namespace> -o wide
-kubectl logs -n <namespace> <pod> --previous
-kubectl top pods -n <namespace>
-kubectl describe pod -n <namespace> <pod>
 helm upgrade --install <release> <chart> -n <namespace> --values values.yaml --dry-run
-
-# Flux
-flux get all -n <namespace>
 flux get sources git -A
-flux reconcile source git flux-system
-flux reconcile kustomization flux-system
-flux logs --follow --level=error
 flux diff kustomization flux-system
-
-# Sealed Secrets / kubeseal
+flux reconcile source git flux-system          # needs approval: mutates cluster state
 kubeseal --fetch-cert --controller-name=sealed-secrets --controller-namespace=kube-system
-kubeseal --format=yaml < secret.yaml > sealed-secret.yaml
-kubectl get sealedsecrets -n <namespace>
-
-# Talos
-talosctl version --nodes <node-ip>
-talosctl health --nodes <node-ip>
-talosctl get members
-talosctl logs -n <node-ip> kubelet
-talosctl dmesg -n <node-ip>
-talosctl dashboard -n <node-ip>
-
-# go-task
-task --list
 task <task-name> --dry-run
-
-# jq (common patterns)
-kubectl get pods -n <namespace> -o json | jq '.items[].metadata.name'
-kubectl get secret <name> -n <namespace> -o json | jq '.data | map_values(@base64d)'
-
-# Bash validation
-bash -n script.sh
-shellcheck script.sh
-
-# Python
-python -m py_compile script.py
-pytest -v tests/
 ```
 
-## Communication & Token Efficiency (Claude Pro, Sonnet 5)
+## Communication & Token Efficiency (Claude Pro, Sonnet 5.5)
 - Direct and technical — skip preamble, no excessive validation ("great approach!")
 - Security → scalability → maintainability, in that order, for reviews
 - Can't verify without running it? Say so and recommend testing — don't present a guess as a fix

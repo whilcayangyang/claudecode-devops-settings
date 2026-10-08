@@ -1,8 +1,8 @@
-# claudecode-devops-settings
+# claudecode-settings
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-5A32FB)](https://github.com/anthropics/claude-code)
-[![Model](https://img.shields.io/badge/model-claude--sonnet--5-orange)](settings.json)
+[![Model](https://img.shields.io/badge/model-claude--sonnet--5--5-orange)](settings.json)
 [![ECC Plugin](https://img.shields.io/badge/ECC-everything--claude--code-1f6feb)](https://github.com/affaan-m/everything-claude-code)
 
 Claude Code configuration tuned for senior infrastructure engineers managing production and Homelab environments. Pairs a battle-tested `settings.json` with a curated [Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code) plugin subset to keep the assistant direct, safe, and token-efficient on IaC workflows.
@@ -23,12 +23,12 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 ## Benefits
 
 - **Read-only by default for destructive ops** — `terraform apply`, `kubectl delete`, `kubectl exec/scale`, `helm install`, `docker exec`, `docker rm -f`, `terraform state push`, `talosctl reboot/reset/upgrade/apply-config`, and `flux delete/suspend` are in the deny list; you must approve each explicitly.
-- **Auto-summarized tool output** — PostToolUse hooks filter `terraform plan/show`, `docker logs`, `kubectl diff/logs`, `ansible --check`, and `kubectl rollout status` output down to the signal lines (errors, warnings, diffs), saving tokens on verbose commands.
+- **Auto-summarized tool output** — PostToolUse hooks filter `terraform plan/show`, `docker logs`, `docker compose logs`, `kubectl diff/logs`, `ansible --check`, and `kubectl rollout status` output (and tail `docker ps/inspect` and `docker service ls`) down to the signal lines (errors, warnings, diffs), saving tokens on verbose commands.
 - **Infra-only ECC subset** — installs only the skills and agents relevant to Terraform, Docker, Kubernetes, Flux, Talos, Ansible, Python, and Bash. Language-specific reviewers (TypeScript, Kotlin, Rust, Java) are skipped.
-- **Token budget enforced** — `CLAUDE_CODE_EFFORT_LEVEL=medium`, `MAX_THINKING_TOKENS=10000`, and `ECC_SESSION_START_CONTEXT=off` keep per-prompt overhead low on Claude Pro's 44K-token window.
+- **Token budget enforced** — `CLAUDE_CODE_EFFORT_LEVEL=high`, `MAX_THINKING_TOKENS=10000`, `ECC_HOOK_PROFILE=minimal`, and `ECC_SESSION_START_CONTEXT=off` keep per-prompt overhead low on Claude Pro's 44K-token window.
 - **Dry-run culture built in** — `CLAUDE.md` makes dry-runs (`terraform plan`, `ansible --check`, `kubectl diff`, `helm --dry-run`, `task --dry-run`) a non-negotiable operating rule, not a suggestion.
 - **Approval-gated destructive actions** — `terraform apply/destroy`, `kubectl delete`, `helm uninstall`, `rm -rf`, `git push --force`, and `talosctl reset` require my explicit approval per instance, enforced both in `settings.json`'s deny list and as a non-negotiable rule in `CLAUDE.md`.
-- **MCP guidance included** — `ecc-setup.sh --mcp` explains which MCP servers to keep (context7, github, sequential-thinking) and which to disable (exa, memory, playwright) to preserve context window.
+- **MCP guidance included** — after `--install`, the script points to ECC's MCP catalog; keep MCP usage lean (see Token Budget Notes) to preserve context window.
 
 ---
 
@@ -91,6 +91,9 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 | `network-interface-health` | Diagnosing interface-level network health |
 | `netmiko-ssh-automation` | Scripting network device automation via Netmiko |
 | `flox-environments` | Managing Flox dev environments |
+| `cisco-ios-patterns` | Cisco IOS config and operational patterns |
+| `context-budget` | Auditing and trimming context/token overhead |
+| `automation-audit-ops` | Auditing automations and harness maintenance |
 
 ### ECC Agents Installed
 
@@ -106,6 +109,7 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 | `network-architect` | Enterprise/multi-site network design |
 | `network-config-reviewer` | Reviewing router/switch config for safety |
 | `network-troubleshooter` | Diagnosing live network connectivity issues |
+| `harness-optimizer` | Tuning local agent-harness reliability and cost |
 
 ### CLAUDE.md Rules Enforced
 
@@ -123,7 +127,6 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 - Python requires type hints and Google-style docstrings
 - `kubeseal` version must match the sealed-secrets controller in cluster
 - `talosctl` must be version-locked to the cluster (never mix versions)
-- Flux GitOps: prefer `flux reconcile` over direct `kubectl apply`
 
 **What NOT To Do — non-negotiable unless explicitly approved in-session:**
 - No Linux/DevOps fundamentals explanations, no unsolicited multiple solutions, no cloud-only bias, no over-engineering Homelab, no editing outside the repo, no commits — Claude prepares changes, the user commits
@@ -136,7 +139,7 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 |---|---|---|
 | [Claude Code](https://github.com/anthropics/claude-code) | Latest | CLI or desktop app |
 | Claude Pro / Team / API | — | 44K token window assumed |
-| Model | `claude-sonnet-5` | Pinned in `settings.json` (`model` + `ANTHROPIC_DEFAULT_SONNET_MODEL`); Haiku fallback is `claude-haiku-4-5-20251001` |
+| Model | `claude-sonnet-5-5` | Pinned in `settings.json` (`model` + `ANTHROPIC_DEFAULT_SONNET_MODEL`, currently `claude-sonnet-5-5`); Haiku fallback is `claude-haiku-4-5-20251001` |
 | Git | 2.x+ | For submodule management |
 | Node.js | 18+ | Required by ECC install script |
 | npm | 9+ | ECC dependency install |
@@ -160,8 +163,8 @@ Claude Code configuration tuned for senior infrastructure engineers managing pro
 ### 1. Clone with submodule
 
 ```bash
-git clone --recurse-submodules https://github.com/whil/claudecode-devops-settings.git
-cd claudecode-devops-settings
+git clone --recurse-submodules https://github.com/whilcayangyang/claudecode-settings.git
+cd claudecode-settings
 ```
 
 Or if already cloned without the submodule:
@@ -195,13 +198,9 @@ Run these two commands at the Claude Code prompt:
 /plugin install ecc@ecc
 ```
 
-### 5. Review MCP recommendations
+### 5. Configure MCP servers
 
-```bash
-./ecc-setup.sh --mcp
-```
-
-Prints which MCP servers to keep enabled and which to disable for an IaC-focused workflow.
+Run `/mcp` inside Claude Code. ECC's MCP catalog is at `everything-claude-code/mcp-configs/mcp-servers.json`; enable only what the IaC workflow needs.
 
 ### Uninstall
 
@@ -212,16 +211,16 @@ Prints which MCP servers to keep enabled and which to disable for an IaC-focused
 Removes ECC rules, skills, and agents from `~/.claude/`. Then inside Claude Code:
 
 ```
-/plugin uninstall everything-claude-code@everything-claude-code
+/plugin uninstall ecc@ecc
 ```
 
 ---
 
 ## Token Budget Notes
 
-- `ECC_HOOK_PROFILE=minimal` and `ECC_SESSION_START_CONTEXT=off` reduce per-session overhead
+- `ECC_HOOK_PROFILE=minimal` and `ECC_SESSION_START_CONTEXT=off` reduce per-session overhead; `ECC_DISABLED_HOOKS` turns off `post:edit:typecheck` and `pre:bash:tmux-reminder`
 - `MAX_THINKING_TOKENS=10000` caps extended thinking (toggle with `Alt+T` in Claude Code)
-- `CLAUDE_CODE_EFFORT_LEVEL=medium` balances quality vs token spend
+- `CLAUDE_CODE_EFFORT_LEVEL=high` favors quality; drop to `medium` if the 44K window runs out too fast
 - Use `/compact` when context exceeds 60%; `/clear` between unrelated infra tasks
 - Target ≤ 10 active MCPs, ≤ 80 total MCP tools to preserve context window headroom
 
