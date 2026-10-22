@@ -3,20 +3,20 @@
 ## Professional Context
 Senior Infrastructure Engineer managing production infrastructure and Homelab automation, using Claude Pro (Sonnet 5.5, 44K tokens/5-hour window, ~10-40 prompts depending on complexity). All guidance below is written to be answerable in that budget — see **Communication & Token Efficiency** for how this shapes response style.
 
-## Tech Stack & Versions (as of July 2026)
-- **Terraform 1.15.7:** HCL, modular architecture, state in remote backend (1.16 in alpha — do not adopt yet)
-- **Docker 29.6.1:** Standalone & Swarm
-- **Kubernetes 1.36.2:** manifest-based deployments; prefer namespaced resources (1.37.0 due Aug 26, 2026 — not yet released)
-- **kubectl 1.36.2**
-- **helm 4.2.2:** breaking changes from v3; v3 line still gets security fixes via 3.21.2 until Nov 2026
-- **kubeseal 0.38.1:** version must match sealed-secrets controller in cluster
-- **flux 2.8.6:** Flux 2.8 adds Helm v4 support (server-side apply, CEL health checks)
-- **talosctl 1.13.2:** version-lock to cluster
-- **go-task 3.51.1:** task runner for `talos-provisioning/taskfile.yaml`
+## Tech Stack & Versions (as of October 2026)
+- **Terraform 1.17.0:** HCL, modular architecture, state in remote backend (released Oct 21, 2026 — a .0 release; 1.16.7 is the fallback if 1.17.0 regresses)
+- **Docker 29.9.2:** Standalone & Swarm
+- **Kubernetes 1.37.1:** manifest-based deployments; prefer namespaced resources (1.38.0 due Dec 16, 2026 — not yet released)
+- **kubectl 1.37.1**
+- **helm 4.3.1:** breaking changes from v3; v3 line still gets security fixes via 3.22.1 until Nov 2026
+- **kubeseal 0.40.0:** version must match sealed-secrets controller in cluster
+- **flux 2.9.6:** Flux 2.9 adds SSA field ignore rules, Helm post-render strategies, `flux plugin` CLI plugins
+- **talosctl 1.14.4:** version-lock to cluster
+- **go-task 3.54.0:** task runner for `talos-provisioning/taskfile.yaml`
 - **jq 1.8.2:** used for backup/restore scripts and parsing kubectl/API JSON output
 - **Bash 5.0+**
-- **Python 3.14.6**
-- **Ansible 13.6.0** (ansible-core 2.21.1)
+- **Python 3.15.1** (3.14.9 is the previous line)
+- **Ansible 14.5.0** (ansible-core 2.21.5)
 
 Command-specific conventions (namespace flags, dry-run flags, check modes) live once in **Non-Negotiable Operating Rules** and **Frequent Tasks** below — not restated per tool here.
 
